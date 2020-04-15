@@ -1,0 +1,86 @@
+<template>
+  <div ref="dom" class="charts chart-pie"></div>
+</template>
+
+<script>
+import echarts from 'echarts'
+import tdTheme from './theme.json'
+import { on, off } from '@/libs/tools'
+echarts.registerTheme('tdTheme', tdTheme)
+export default {
+  name: 'ChartPie',
+  props: {
+    value: Array,
+    text: String,
+    subtext: String
+  },
+  data () {
+    return {
+      dom: {}
+    }
+  },
+  watch: {
+    value (val) {
+      // 加载中
+      if (val.length) {
+        this.dom.hideLoading()
+        this.setOption()
+      }
+    }
+  },
+  methods: {
+    resize () {
+      this.dom.resize()
+    },
+    setOption () {
+      let legend = this.value.map(_ => _.name)
+      let option = {
+        title: {
+          text: this.text,
+          subtext: this.subtext,
+          x: 'center'
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{b} : {d}%'
+        },
+        legend: {
+          orient: 'vertical',
+          left: 'left',
+          data: legend
+        },
+        series: [
+          {
+            type: 'pie',
+            radius: '55%',
+            center: ['50%', '60%'],
+            data: this.value,
+            itemStyle: {
+              emphasis: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ]
+      }
+      this.dom.setOption(option)
+    }
+  },
+  mounted () {
+    this.$nextTick(() => {
+      this.dom = echarts.init(this.$refs.dom, 'tdTheme')
+      this.setOption()
+      this.dom.showLoading({
+        text: '加载中',
+        color: '#3385ff'
+      })
+      on(window, 'resize', this.resize)
+    })
+  },
+  beforeDestroy () {
+    off(window, 'resize', this.resize)
+  }
+}
+</script>

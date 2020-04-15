@@ -1,0 +1,83 @@
+<template>
+  <div class="user-avator-dropdown">
+    <Dropdown @on-click="handleClick">
+      <span style="vertical-align: middle;">
+        <Badge :dot="!!messageUnreadCount">
+          <Avatar :src="userAvator"/>
+        </Badge>
+        <Icon style="vertical-align: middle;" :size="18" type="md-arrow-dropdown"></Icon>
+      </span>
+      <DropdownMenu slot="list">
+        <DropdownItem style="border-bottom: 1px solid #e8eaec"><span style="color: #aaa;">{{ userName }}</span></DropdownItem>
+        <DropdownItem name="message">
+          消息中心<Badge style="margin-left: 10px" :count="messageUnreadCount"></Badge>
+        </DropdownItem>
+        <DropdownItem name="feedback">问题反馈</DropdownItem>
+        <DropdownItem name="logout">退出登录</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <Feedback v-model="feedbackModal" />
+  </div>
+</template>
+
+<script>
+import './user.less'
+import { mapActions } from 'vuex'
+import Feedback from '_c/us/feedback'
+export default {
+  name: 'User',
+  components: {
+    Feedback
+  },
+  props: {
+    userAvator: {
+      type: String,
+      default: ''
+    },
+    messageUnreadCount: {
+      type: Number,
+      default: 0
+    },
+    userName: {
+      type: String,
+      default: ''
+    }
+  },
+  data () {
+    return {
+      feedbackModal: false
+    }
+  },
+  methods: {
+    ...mapActions([
+      'handleLogOut'
+    ]),
+    logout () {
+      this.handleLogOut().then(() => {
+        this.$router.push({
+          name: 'login'
+        })
+      })
+    },
+    message () {
+      return false
+      // this.$router.push({
+      //   name: 'message_page'
+      // })
+    },
+    feedback () {
+      this.feedbackModal = true
+    },
+    handleClick (name) {
+      switch (name) {
+        case 'logout': this.logout()
+          break
+        case 'message': this.message()
+          break
+        case 'feedback': this.feedback()
+          break
+      }
+    }
+  }
+}
+</script>

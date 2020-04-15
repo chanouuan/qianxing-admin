@@ -176,7 +176,9 @@
       <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" @click="goCash()">代收现金</Button>
       <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" @click="downloadpaynote()">下载赔偿通知书</Button>
       <Button v-if="form.status==1||form.status==2" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="downloaditemnote()">下载勘验笔录</Button>
-      <Button v-if="form.status==3" type="primary" style="width: 150px" @click="downloadallnote()">下载卷宗</Button>
+      <Button v-if="form.status==3&&form.archive_num" type="primary" style="width: 150px; margin-right: 16px" @click="downloadallnote()">下载卷宗</Button>
+      <Button v-if="form.status==3&&form.archive_num" type="warning" style="width: 150px; margin-right: 16px" @click="createArchive()">重新生成卷宗</Button>
+      <Button v-if="form.status==3&&!form.archive_num" type="primary" style="width: 150px; margin-right: 16px" @click="createArchive()">生成卷宗</Button>
     </div>
     <Spin fix v-if="loading"></Spin>
   </Card>
@@ -189,7 +191,8 @@ import {
   reportPayCash,
   downloadallnote,
   downloaditemnote,
-  downloadpaynote
+  downloadpaynote,
+  createArchive
 } from '@/api/server'
 export default {
   name: 'detail',
@@ -212,6 +215,7 @@ export default {
       pay: 0,
       cash: 0,
       money: 0,
+      archive_num: '',
       form: {
         items: []
       },
@@ -264,6 +268,36 @@ export default {
           this.submit = true
           reportFile({ report_id: this.id }).then(res => {
             this.$Message.success('转发成功')
+            this.cancel({ msg: 'ok' })
+          })
+        }
+      })
+    },
+    createArchive () {
+      // 生成卷宗
+      this.$Modal.confirm({
+        render: (h) => {
+          return h('Input', {
+            props: {
+              value: this.archive_num,
+              autofocus: true,
+              maxlength: 6,
+              placeholder: '请输入卷宗号'
+            },
+            on: {
+              input: (val) => {
+                this.archive_num = val
+              }
+            }
+          })
+        },
+        title: '请输入卷宗号，卷宗号为数字格式',
+        onOk: () => {
+          if (!this.archive_num) {
+            return this.$Message.error('卷宗号不能为空')
+          }
+          createArchive({ report_id: this.id, archive_num: this.archive_num }).then(res => {
+            this.$Message.success('卷宗生成成功')
             this.cancel({ msg: 'ok' })
           })
         }
@@ -342,6 +376,7 @@ export default {
           this.pay = res.pay
           this.cash = res.cash
           this.money = 0
+          this.archive_num = res.archive_num
         })
       }
     }

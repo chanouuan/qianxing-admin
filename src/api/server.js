@@ -36,6 +36,16 @@ export const reportFile = (data) => {
   })
 }
 
+// 生成卷宗
+export const createArchive = (data) => {
+  data.token = getToken()
+  return axios.request({
+    url: 'adminserver/createArchive',
+    data: data,
+    method: 'post'
+  })
+}
+
 // 下载勘验笔录
 export const downloaditemnote = (data) => {
   data.token = getToken()

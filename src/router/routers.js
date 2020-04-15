@@ -63,7 +63,7 @@ export default [
         path: 'report',
         name: 'report',
         meta: {
-          icon: 'ios-clipboard',
+          icon: 'md-clipboard',
           title: '案件处置',
           access: ['ANY', 'report']
         },

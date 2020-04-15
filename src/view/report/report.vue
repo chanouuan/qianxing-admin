@@ -14,7 +14,7 @@
             <FormItem>
               <Select style="width: 150px; text-align: left;" v-model="search.status" placeholder="案件状态" clearable>
                 <Option value="1">受理中</Option>
-                <Option value="2">已受理</Option>
+                <Option value="2">待收款</Option>
                 <Option value="3">已结案</Option>
                 <Option value="-3">已撤销</Option>
               </Select>
@@ -112,8 +112,7 @@ export default {
         },
         {
           title: '事发地点',
-          key: 'address',
-          tooltip: true
+          key: 'address'
         },
         {
           title: '车牌号',
@@ -136,12 +135,24 @@ export default {
         },
         {
           title: '受理时间',
-          tooltip: true,
           key: 'create_time'
         },
         {
           title: '状态',
-          key: 'status_str'
+          key: 'status_str',
+          render: (h, params) => {
+            let color = '#333'
+            if (params.row.status === 1) {
+              color = '#576b95'
+            } else if (params.row.status === 2) {
+              color = '#e64340'
+            } else if (params.row.status === 3) {
+              color = '#19be6b'
+            } else if (params.row.status === -3) {
+              color = '#ed4014'
+            }
+            return h('span', { style: { color: color } }, params.row.status_str)
+          }
         },
         {
           title: '操作',
@@ -166,7 +177,7 @@ export default {
                 }
               }, params.row.status === 3 ? '查看' : '处置')
             ]
-            if (params.row.status === 3) {
+            if (params.row.status === 3 && params.row.archive_num) {
               action.push(h('Button', {
                 props: {
                   type: 'default',

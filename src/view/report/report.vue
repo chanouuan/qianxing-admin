@@ -269,7 +269,7 @@ export default {
       let id = this.selectId = this.rows[index].id
       downloadallnote({ report_id: id }).then(res => {
         let link = document.createElement('a')
-        link.href = res.doc_url
+        link.href = res.url
         link.click()
         link = null
       })

@@ -341,7 +341,7 @@ export default {
       // 下载赔偿通知书
       downloadpaynote({ report_id: this.id }).then(res => {
         let link = document.createElement('a')
-        link.href = res.doc_url
+        link.href = res.url
         link.click()
         link = null
       })
@@ -350,7 +350,7 @@ export default {
       // 下载卷宗
       downloadallnote({ report_id: this.id }).then(res => {
         let link = document.createElement('a')
-        link.href = res.doc_url
+        link.href = res.url
         link.click()
         link = null
       })
@@ -359,7 +359,7 @@ export default {
       // 下载勘验笔录
       downloaditemnote({ report_id: this.id }).then(res => {
         let link = document.createElement('a')
-        link.href = res.doc_url
+        link.href = res.url
         link.click()
         link = null
       })

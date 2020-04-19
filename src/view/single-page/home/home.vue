@@ -8,33 +8,47 @@
         </infor-card>
       </Col>
     </Row>
+    <Row>
+      <Card shadow>
+        <chart-line style="height: 310px;" :value="lineData" text="今年案件处置数"/>
+      </Card>
+    </Row>
   </div>
 </template>
 
 <script>
+import {
+  indexCount
+} from '@/api/server'
 import InforCard from '_c/info-card'
 import CountTo from '_c/count-to'
+import { ChartLine } from '_c/charts'
 export default {
   name: 'home',
   components: {
     InforCard,
-    CountTo
-  },
-  methods: {
-    //
+    CountTo,
+    ChartLine
   },
   data () {
     return {
       cardData: [
-        { title: '今日报警', icon: 'md-locate', count: 2, color: '#3399FF' },
-        { title: '今日隐患', icon: 'md-cash', count: 4, color: '#3399FF' },
-        { title: '今日事故', icon: 'md-people', count: 1, color: '#3399FF' },
-        { title: '累计案件', icon: 'md-person-add', count: 53, color: '#3399FF' }
-      ]
+        { title: '今日报警', icon: 'md-locate', count: 0, color: '#3399FF' },
+        { title: '今日隐患', icon: 'md-cash', count: 0, color: '#3399FF' },
+        { title: '今日事故', icon: 'md-people', count: 0, color: '#3399FF' },
+        { title: '累计案件', icon: 'md-person-add', count: 0, color: '#3399FF' }
+      ],
+      lineData: []
     }
   },
   created () {
-    //
+    indexCount().then(res => {
+      let cardData = res[0]
+      this.cardData.forEach((n, k) => {
+        n.count = cardData[k]
+      })
+      this.lineData = res[1]
+    }).catch(() => {})
   }
 }
 </script>

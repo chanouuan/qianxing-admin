@@ -51,7 +51,7 @@ export default [
   },
   {
     path: '/report',
-    name: 'report',
+    name: '_report',
     component: Main,
     meta: {
       hideInBread: true,

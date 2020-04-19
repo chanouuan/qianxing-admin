@@ -174,13 +174,15 @@
       <Button style="width: 150px; margin-right: 16px" type="default" :loading="submit" @click="cancel()">取消</Button>
       <Button v-if="form.status==1" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="reportFile()">转发赔偿通知书</Button>
       <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" @click="goCash()">代收现金</Button>
-      <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" @click="downloadpaynote()">下载赔偿通知书</Button>
-      <Button v-if="form.status==1||form.status==2" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="downloaditemnote()">下载勘验笔录</Button>
+      <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" @click="downloadpaynote()">预览赔偿通知书</Button>
+      <Button v-if="form.status==1||form.status==2" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="downloaditemnote()">预览勘验笔录</Button>
       <Button v-if="form.status==3&&form.archive_num" type="primary" style="width: 150px; margin-right: 16px" @click="downloadallnote()">下载卷宗</Button>
       <Button v-if="form.status==3&&form.archive_num" type="warning" style="width: 150px; margin-right: 16px" @click="createArchive()">重新生成卷宗</Button>
       <Button v-if="form.status==3&&!form.archive_num" type="primary" style="width: 150px; margin-right: 16px" @click="createArchive()">生成卷宗</Button>
     </div>
     <Spin fix v-if="loading"></Spin>
+    <!--浏览文件-->
+    <viewpdf v-model="pdfmodal" :src="filesrc"/>
   </Card>
 </template>
 
@@ -194,8 +196,12 @@ import {
   downloadpaynote,
   createArchive
 } from '@/api/server'
+import viewpdf from '_c/view-pdf/view-pdf'
 export default {
   name: 'detail',
+  components: {
+    viewpdf
+  },
   model: {
     prop: 'model_value',
     event: 'child-change'
@@ -211,6 +217,8 @@ export default {
     return {
       loading: false,
       submit: false,
+      pdfmodal: false,
+      filesrc: '',
       total_money: 0,
       pay: 0,
       cash: 0,
@@ -340,28 +348,43 @@ export default {
     downloadpaynote () {
       // 下载赔偿通知书
       downloadpaynote({ report_id: this.id }).then(res => {
-        let link = document.createElement('a')
-        link.href = res.url
-        link.click()
-        link = null
+        if (~res.url.indexOf('pdf')) {
+          this.pdfmodal = true
+          this.filesrc = res.url
+        } else {
+          let link = document.createElement('a')
+          link.href = res.url
+          link.click()
+          link = null
+        }
       })
     },
     downloadallnote () {
       // 下载卷宗
       downloadallnote({ report_id: this.id }).then(res => {
-        let link = document.createElement('a')
-        link.href = res.url
-        link.click()
-        link = null
+        if (~res.url.indexOf('pdf')) {
+          this.pdfmodal = true
+          this.filesrc = res.url
+        } else {
+          let link = document.createElement('a')
+          link.href = res.url
+          link.click()
+          link = null
+        }
       })
     },
     downloaditemnote () {
       // 下载勘验笔录
       downloaditemnote({ report_id: this.id }).then(res => {
-        let link = document.createElement('a')
-        link.href = res.url
-        link.click()
-        link = null
+        if (~res.url.indexOf('pdf')) {
+          this.pdfmodal = true
+          this.filesrc = res.url
+        } else {
+          let link = document.createElement('a')
+          link.href = res.url
+          link.click()
+          link = null
+        }
       })
     },
     loadData () {

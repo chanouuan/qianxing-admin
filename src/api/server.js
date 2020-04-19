@@ -1,6 +1,15 @@
 import axios from '@/libs/api.request'
 import { getToken } from '@/libs/util'
 
+// 首页统计
+export const indexCount = () => {
+  return axios.request({
+    url: 'adminserver/indexCount',
+    data: { token: getToken() },
+    method: 'post'
+  })
+}
+
 // 获取案件列表
 export const getReportList = (data, is_export) => {
   data.token = getToken()

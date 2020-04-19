@@ -101,6 +101,11 @@
               {{form.traffic_state}}
             </FormItem>
           </Col>
+          <Col span="6">
+            <FormItem label="预计通行">
+              {{form.pass_time}}分钟
+            </FormItem>
+          </Col>
         </Row>
       </Form>
     </Card>

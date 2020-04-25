@@ -11,19 +11,19 @@
           </FormItem>
         </Col>
         <Col span="8">
-          <FormItem label="登录密码" prop="password">
-            <Input :maxlength="20" v-model.trim="form.password" :placeholder="id?'不修改密码就不用重新填写':''"/>
+          <FormItem label="手机号码" prop="telephone">
+            <Input :maxlength="11" v-model.trim="form.telephone"/>
           </FormItem>
         </Col>
         <Col span="8">
-          <FormItem label="手机号码" prop="telephone">
-            <Input :maxlength="11" v-model.trim="form.telephone"/>
+          <FormItem label="登录密码" prop="password">
+            <Input :maxlength="20" v-model.trim="form.password" :placeholder="id?'不修改密码就不用重新填写':''"/>
           </FormItem>
         </Col>
       </Row>
       <Row>
         <Col span="8">
-          <FormItem label="人员姓名">
+          <FormItem label="姓名">
             <Input :maxlength="10" v-model.trim="form.full_name"/>
           </FormItem>
         </Col>
@@ -48,6 +48,11 @@
         <Col span="8">
           <FormItem label="职位" prop="title">
             <Input :maxlength="20" v-model.trim="form.title"/>
+          </FormItem>
+        </Col>
+        <Col span="8">
+          <FormItem label="执法证号" prop="law_num">
+            <Input :maxlength="8" v-model.trim="form.law_num"/>
           </FormItem>
         </Col>
         <Col span="8" v-show="id">
@@ -115,24 +120,16 @@ export default {
         full_name: '',
         gender: 1,
         title: '',
+        law_num: '',
         role_id: [],
         status: 1
       },
       ruleForm: {
-        user_name: [
-          { required: true, message: '登录账号不能为空', trigger: 'blur' }
-        ],
         telephone: [
           { required: true, message: '手机号不能为空', trigger: 'blur' }
         ],
         password: [
           { validator: validatePassword, required: true, trigger: 'blur' }
-        ],
-        role_id: [
-          { required: true, type: 'array', min: 1, message: '请选择角色', trigger: 'change' }
-        ],
-        title: [
-          { required: true, message: '请选择职位', trigger: 'change' }
         ]
       }
     }
@@ -167,11 +164,11 @@ export default {
         }
       }
     },
-    cancel () {
+    cancel (res) {
       // 取消
       this.$refs['formRef'].resetFields()
       this.$emit('child-change', false)
-      this.$emit('on-complete', {})
+      this.$emit('on-complete', res || {})
     },
     save () {
       // 保存
@@ -189,7 +186,7 @@ export default {
           this.submit = false
           if (this.id) {
             // 编辑成功
-            this.cancel()
+            this.cancel({ msg: 'ok' })
           } else {
             // 添加成功
             this.$Modal.confirm({
@@ -199,16 +196,12 @@ export default {
                 this.clearData()
               },
               onCancel: () => {
-                this.cancel()
+                this.cancel({ msg: 'ok' })
               }
             })
           }
-        }).catch(err => {
+        }).catch(() => {
           this.submit = false
-          this.$Modal.error({
-            title: '提示',
-            content: err
-          })
         })
       })
     },

@@ -56,7 +56,7 @@ export default [
     meta: {
       hideInBread: true,
       notCache: true,
-      access: ['ANY']
+      access: ['ANY', 'report']
     },
     children: [
       {
@@ -100,6 +100,16 @@ export default [
           access: ['ANY', 'people']
         },
         component: () => import('@/view/setting/people.vue')
+      },
+      {
+        path: 'import',
+        name: 'import',
+        meta: {
+          icon: 'ios-document',
+          title: '数据导入',
+          access: ['ANY']
+        },
+        component: () => import('@/view/setting/import.vue')
       }
     ]
   },

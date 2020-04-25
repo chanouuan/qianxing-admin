@@ -2,7 +2,7 @@ export default {
   /**
    * @description 配置显示在浏览器标签的title
    */
-  title: '高速路政',
+  title: '黔中行',
   /**
    * @description token在Cookie中存储的天数，默认1天
    */
@@ -18,7 +18,7 @@ export default {
    */
   baseUrl: {
     dev: 'http://192.168.1.127:85',
-    pro: 'http://39.104.64.52'
+    pro: 'https://server.hqians.com'
   },
   /*
    * @description 默认打开的首页的路由name值，默认为home

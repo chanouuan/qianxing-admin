@@ -9,6 +9,7 @@
       </span>
       <DropdownMenu slot="list">
         <DropdownItem style="border-bottom: 1px solid #e8eaec"><span style="color: #aaa;">{{ userName }}</span></DropdownItem>
+        <DropdownItem name="pwd">修改密码</DropdownItem>
         <DropdownItem name="message">
           消息中心<Badge style="margin-left: 10px" :count="messageUnreadCount"></Badge>
         </DropdownItem>
@@ -21,6 +22,9 @@
 </template>
 
 <script>
+import {
+  editPwd
+} from '@/api/server'
 import './user.less'
 import { mapActions } from 'vuex'
 import Feedback from '_c/us/feedback'
@@ -45,7 +49,8 @@ export default {
   },
   data () {
     return {
-      feedbackModal: false
+      feedbackModal: false,
+      newpwd: ''
     }
   },
   methods: {
@@ -68,6 +73,35 @@ export default {
     feedback () {
       this.feedbackModal = true
     },
+    pwd () {
+      this.$Modal.confirm({
+        render: (h) => {
+          return h('Input', {
+            props: {
+              value: '',
+              autofocus: true,
+              maxlength: 32,
+              placeholder: '请输入新密码'
+            },
+            on: {
+              input: (val) => {
+                this.newpwd = val
+              }
+            }
+          })
+        },
+        title: '修改登录密码',
+        onOk: () => {
+          if (!this.newpwd) {
+            return this.$Message.error('密码不能为空')
+          }
+          editPwd({ password: this.newpwd }).then(res => {
+            this.newpwd = ''
+            this.$Message.success('密码修改成功')
+          }).catch(() => {})
+        }
+      })
+    },
     handleClick (name) {
       switch (name) {
         case 'logout': this.logout()
@@ -75,6 +109,8 @@ export default {
         case 'message': this.message()
           break
         case 'feedback': this.feedback()
+          break
+        case 'pwd': this.pwd()
           break
       }
     }

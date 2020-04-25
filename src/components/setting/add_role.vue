@@ -114,11 +114,11 @@ export default {
         }
       }
     },
-    cancel () {
+    cancel (res) {
       // 取消
       this.$refs['formRef'].resetFields()
       this.$emit('child-change', false)
-      this.$emit('on-complete', {})
+      this.$emit('on-complete', res || {})
     },
     save () {
       // 保存
@@ -134,13 +134,9 @@ export default {
         data.permission = data.permission.join(',')
         saveRole(data).then(res => {
           this.submit = false
-          this.cancel()
-        }).catch(err => {
+          this.cancel({ msg: 'ok' })
+        }).catch(() => {
           this.submit = false
-          this.$Modal.error({
-            title: '提示',
-            content: err
-          })
         })
       })
     },

@@ -81,7 +81,7 @@ export default {
           key: 'action',
           align: 'center',
           render: (h, params) => {
-            if (params.row.is_admin) {
+            if (params.row.is_sys) {
               return
             }
             return h('Button', {
@@ -140,9 +140,9 @@ export default {
       this.selectId = this.rows[index].id
       this.addPage = true
     },
-    addComplete () {
+    addComplete (res) {
       // 添加完成回调
-      this.loadList()
+      if (res.msg === 'ok') this.loadList()
     }
   },
   created () {

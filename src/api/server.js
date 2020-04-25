@@ -1,6 +1,16 @@
 import axios from '@/libs/api.request'
 import { getToken } from '@/libs/util'
 
+// 修改密码
+export const editPwd = (data) => {
+  data.token = getToken()
+  return axios.request({
+    url: 'adminserver/editPwd',
+    data: data,
+    method: 'post'
+  })
+}
+
 // 首页统计
 export const indexCount = () => {
   return axios.request({
@@ -147,6 +157,16 @@ export const savePeople = (data) => {
   data.token = getToken()
   return axios.request({
     url: 'adminserver/savePeople',
+    data: data,
+    method: 'post'
+  })
+}
+
+// 删除人员
+export const delPeople = (data) => {
+  data.token = getToken()
+  return axios.request({
+    url: 'adminserver/delPeople',
     data: data,
     method: 'post'
   })

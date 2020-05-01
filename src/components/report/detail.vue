@@ -1,5 +1,5 @@
 <template>
-  <Card shadow v-show="model_value">
+  <Card shadow v-show="model_value" style="postion: relative">
     <Card shadow>
       <p slot="title" class="card-title">
         当事人信息
@@ -103,7 +103,12 @@
           </Col>
           <Col span="6">
             <FormItem label="预计通行">
-              {{form.pass_time}}分钟
+              {{form.pass_time?form.pass_time+'分钟':''}}
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="路产情况">
+              {{form.is_property?'有路产损失':'无路产损失'}}
             </FormItem>
           </Col>
         </Row>
@@ -148,6 +153,30 @@
               {{form.create_time}}
             </FormItem>
           </Col>
+          <Col span="6">
+            <FormItem label="交通恢复时间">
+              {{form.recover_time}}
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="勘验时间">
+              {{form.check_start_time}}
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="结案时间">
+              {{form.complete_time}}
+            </FormItem>
+          </Col>
+        </Row>
+        <Row>
+          <Col span="24" style="overflow:hidden">
+            <FormItem label="现场图照">
+              <a :href="item.src" v-if="item.src" target="_blank" style="float:left" v-for="(item, index) in form.site_photos" :key="index">
+                <img width="200" :src="item.src"/>
+              </a>
+            </FormItem>
+          </Col>
         </Row>
       </Form>
     </Card>
@@ -175,13 +204,13 @@
         </Row>
       </Form>
     </Card>
-    <div style="text-align: center;margin: 16px 0;">
+    <div class="con-footer">
       <Button style="width: 150px; margin-right: 16px" type="default" :loading="submit" @click="cancel()">取消</Button>
-      <Button v-if="form.status==1" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="reportFile()">转发赔偿通知书</Button>
+      <Button v-if="form.status==1&&form.is_property" :type="form.is_load?'primary':'default'" style="width: 150px; margin-right: 16px" :loading="submit" @click="reportFile()">发送赔偿通知书</Button>
       <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" @click="goCash()">代收现金</Button>
-      <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" @click="downloadpaynote()">预览赔偿通知书</Button>
+      <Button v-if="form.status==2" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="downloadpaynote()">预览赔偿通知书</Button>
       <Button v-if="form.status==1||form.status==2" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="downloaditemnote()">预览勘验笔录</Button>
-      <Button v-if="form.status==3&&form.archive_num" type="primary" style="width: 150px; margin-right: 16px" @click="downloadallnote()">下载卷宗</Button>
+      <Button v-if="form.status==3&&form.archive_num" type="primary" style="width: 150px; margin-right: 16px" :loading="submit" @click="downloadallnote()">下载卷宗</Button>
       <Button v-if="form.status==3&&form.archive_num" type="warning" style="width: 150px; margin-right: 16px" @click="createArchive()">重新生成卷宗</Button>
       <Button v-if="form.status==3&&!form.archive_num" type="primary" style="width: 150px; margin-right: 16px" @click="createArchive()">生成卷宗</Button>
     </div>
@@ -270,17 +299,30 @@ export default {
       this.$emit('on-complete', res || {})
     },
     reportFile () {
-      // 下发
-      if (this.submit) {
-        return
+      // 发送赔偿通知书
+      if (!this.form.is_load) {
+        return this.$Message.error('当前案件外勤正在处置中，请等待外勤处置完成！')
       }
       this.$Modal.confirm({
-        title: '消息提醒',
-        content: '是否确认转发赔偿通知书给当事人？',
+        render: (h) => {
+          return h('Input', {
+            props: {
+              value: this.archive_num,
+              autofocus: true,
+              maxlength: 6,
+              placeholder: '请输入卷宗号'
+            },
+            on: {
+              input: (val) => {
+                this.archive_num = val
+              }
+            }
+          })
+        },
+        title: '请输入数字格式的卷宗号 (不必填)',
         onOk: () => {
-          this.submit = true
-          reportFile({ report_id: this.id }).then(res => {
-            this.$Message.success('转发成功')
+          reportFile({ report_id: this.id, archive_num: this.archive_num }).then(res => {
+            this.$Message.success('发送成功')
             this.cancel({ msg: 'ok' })
           })
         }
@@ -304,7 +346,7 @@ export default {
             }
           })
         },
-        title: '请输入卷宗号，卷宗号为数字格式',
+        title: '请输入数字格式的卷宗号 (*必填)',
         onOk: () => {
           if (!this.archive_num) {
             return this.$Message.error('卷宗号不能为空')
@@ -337,8 +379,8 @@ export default {
         title: '现金收款不超过 ' + (this.total_money - this.pay - this.cash) + ' 元',
         onOk: () => {
           this.money = parseFloat(this.money)
-          if (isNaN(this.money) || this.money <= 0) {
-            return this.$Message.error('金额只能是大于 0 的数字')
+          if (isNaN(this.money) || this.money < 0) {
+            return this.$Message.error('金额不能小于0')
           }
           if (this.money > (this.total_money - this.pay - this.cash)) {
             return this.$Message.error('金额不能大于 ' + (this.total_money - this.pay - this.cash) + ' 元')
@@ -352,7 +394,12 @@ export default {
     },
     downloadpaynote () {
       // 下载赔偿通知书
+      if (this.submit) {
+        return
+      }
+      this.submit = true
       downloadpaynote({ report_id: this.id }).then(res => {
+        this.submit = false
         if (~res.url.indexOf('pdf')) {
           this.pdfmodal = true
           this.filesrc = res.url
@@ -362,11 +409,18 @@ export default {
           link.click()
           link = null
         }
+      }).catch(() => {
+        this.submit = false
       })
     },
     downloadallnote () {
       // 下载卷宗
+      if (this.submit) {
+        return
+      }
+      this.submit = true
       downloadallnote({ report_id: this.id }).then(res => {
+        this.submit = false
         if (~res.url.indexOf('pdf')) {
           this.pdfmodal = true
           this.filesrc = res.url
@@ -376,11 +430,18 @@ export default {
           link.click()
           link = null
         }
+      }).catch(() => {
+        this.submit = false
       })
     },
     downloaditemnote () {
       // 下载勘验笔录
+      if (this.submit) {
+        return
+      }
+      this.submit = true
       downloaditemnote({ report_id: this.id }).then(res => {
+        this.submit = false
         if (~res.url.indexOf('pdf')) {
           this.pdfmodal = true
           this.filesrc = res.url
@@ -390,6 +451,8 @@ export default {
           link.click()
           link = null
         }
+      }).catch(() => {
+        this.submit = false
       })
     },
     loadData () {
@@ -412,9 +475,16 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
   .card-title {
     border-left: 2px solid #2d8cf0;
     padding-left: 10px;
+  }
+  .con-footer {
+    text-align: center;
+    margin: 16px 0;
+    left: 0;
+    background-color: #fff;
+    width: 100%;
   }
 </style>

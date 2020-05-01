@@ -45,7 +45,7 @@ export const getReportDetail = (data) => {
   })
 }
 
-// 转发赔偿通知书
+// 发送赔偿通知书
 export const reportFile = (data) => {
   data.token = getToken()
   return axios.request({

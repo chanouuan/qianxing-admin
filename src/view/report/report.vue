@@ -101,7 +101,7 @@ export default {
           key: 'full_name',
           render: (h, params) => {
             if (!params.row.full_name) {
-              return h('span', '')
+              return h('span', { style: { color: '#ccc' } }, '待确认')
             }
             return h('span', params.row.full_name)
           }
@@ -160,6 +160,7 @@ export default {
           width: 160,
           align: 'center',
           render: (h, params) => {
+            let load = params.row.status === 2 || (params.row.status === 1 && params.row.is_load)
             let action = [
               h('Button', {
                 props: {
@@ -167,15 +168,15 @@ export default {
                   size: 'small'
                 },
                 style: {
-                  color: '#2d8cf0',
-                  borderColor: '#2d8cf0'
+                  color: load ? '#2d8cf0' : '#576b95',
+                  borderColor: load ? '#2d8cf0' : '#576b95'
                 },
                 on: {
                   click: () => {
                     this.detail(params.index)
                   }
                 }
-              }, params.row.status === 3 ? '查看' : '处置')
+              }, load ? '处置' : '查看')
             ]
             if (params.row.status === 3 && params.row.archive_num) {
               action.push(h('Button', {

@@ -204,6 +204,12 @@
         </Row>
       </Form>
     </Card>
+    <Card v-if="form.cash_log.length" shadow>
+      <p slot="title" class="card-title">
+        现金收款记录
+      </p>
+      <Table ref="table" :columns="cash_log_columns" :data="form.cash_log" :loading="loading" border></Table>
+    </Card>
     <div class="con-footer">
       <Button style="width: 150px; margin-right: 16px" type="default" :loading="submit" @click="cancel()">取消</Button>
       <Button v-if="form.status==1&&form.is_property" :type="form.is_load?'primary':'default'" style="width: 150px; margin-right: 16px" :loading="submit" @click="reportFile()">发送赔偿通知书</Button>
@@ -281,6 +287,20 @@ export default {
         {
           title: '赔偿金额（元）',
           key: 'total_money'
+        }
+      ],
+      cash_log_columns: [
+        {
+          title: '收款人',
+          key: 'user_name'
+        },
+        {
+          title: '收款金额（元）',
+          key: 'amount'
+        },
+        {
+          title: '收款时间',
+          key: 'create_time'
         }
       ]
     }
@@ -482,7 +502,7 @@ export default {
   }
   .con-footer {
     text-align: center;
-    margin: 16px 0;
+    margin: 30px 0 16px 0;
     left: 0;
     background-color: #fff;
     width: 100%;

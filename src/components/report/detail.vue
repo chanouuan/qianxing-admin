@@ -265,7 +265,8 @@ export default {
       money: 0,
       archive_num: '',
       form: {
-        items: []
+        items: [],
+        cash_log: []
       },
       columns: [
         {

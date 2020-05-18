@@ -1,46 +1,58 @@
 <template>
-  <Card shadow v-show="model_value" style="postion: relative">
+  <Card shadow v-show="model_value">
     <Card shadow>
       <p slot="title" class="card-title">
         当事人信息
       </p>
-      <Form :label-width="100" label-colon>
+      <Form v-for="(item, index) in form.persons" :key="index" :label-width="100" label-colon>
         <Row>
           <Col span="6">
             <FormItem label="姓名">
-              {{form.full_name}}
+              {{item.full_name}}
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="性别">
-              {{form.gender}}
+              {{item.gender}}
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="电话">
-              {{form.user_mobile}}
+              {{item.user_mobile}}
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="出生日期">
-              {{form.birthday}}
+              {{item.birthday}}
             </FormItem>
           </Col>
         </Row>
         <Row>
           <Col span="6">
             <FormItem label="身份证">
-              {{form.idcard}}
+              {{item.idcard}}
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="车牌号">
-              {{form.plate_num}}
+              {{item.plate_num}}
             </FormItem>
           </Col>
-          <Col span="12">
+          <Col span="6">
+            <FormItem label="车辆类型">
+              {{item.car_type}}
+            </FormItem>
+          </Col>
+          <Col span="6">
             <FormItem label="住址">
-              {{form.addr}}
+              {{item.addr}}
+            </FormItem>
+          </Col>
+        </Row>
+        <Row>
+          <Col span="6">
+            <FormItem label="责任认定">
+              {{form.status==1?'未认定':('承担（'+(item.money/form.total_money*100)+'%）'+item.money+'元')}}
             </FormItem>
           </Col>
         </Row>
@@ -52,12 +64,7 @@
       </p>
       <Form :label-width="100" label-colon>
         <Row>
-          <Col span="6">
-            <FormItem label="事发时间">
-              {{form.event_time}}
-            </FormItem>
-          </Col>
-          <Col span="6">
+          <Col span="12">
             <FormItem label="桩号">
               {{form.stake_number}}
             </FormItem>
@@ -70,13 +77,13 @@
         </Row>
         <Row>
           <Col span="6">
-            <FormItem label="天气">
-              {{form.weather}}
+            <FormItem label="事发时间">
+              {{form.event_time}}
             </FormItem>
           </Col>
           <Col span="6">
-            <FormItem label="车型">
-              {{form.car_type}}
+            <FormItem label="天气">
+              {{form.weather}}
             </FormItem>
           </Col>
           <Col span="6">
@@ -223,6 +230,7 @@
     <Spin fix v-if="loading"></Spin>
     <!--浏览文件-->
     <viewpdf v-model="pdfmodal" :src="filesrc"/>
+    <confirmpayed v-model="confirmmodal" @onSuccess="confirmPayedSuccess" :total_money="total_money" :persons="form.persons"/>
   </Card>
 </template>
 
@@ -237,10 +245,12 @@ import {
   createArchive
 } from '@/api/server'
 import viewpdf from '_c/view-pdf/view-pdf'
+import confirmpayed from '_c/report/confirmpayed'
 export default {
   name: 'detail',
   components: {
-    viewpdf
+    viewpdf,
+    confirmpayed
   },
   model: {
     prop: 'model_value',
@@ -258,6 +268,7 @@ export default {
       loading: false,
       submit: false,
       pdfmodal: false,
+      confirmmodal: false,
       filesrc: '',
       total_money: 0,
       pay: 0,
@@ -266,7 +277,8 @@ export default {
       archive_num: '',
       form: {
         items: [],
-        cash_log: []
+        cash_log: [],
+        persons: []
       },
       columns: [
         {
@@ -319,35 +331,24 @@ export default {
       this.$emit('child-change', false)
       this.$emit('on-complete', res || {})
     },
+    confirmPayedSuccess (e) {
+      // 已填写赔偿比例
+      this.confirmmodal = false
+      reportFile({
+        report_id: this.id,
+        ratio: e.ratio,
+        archive_num: e.archive_num
+      }).then(res => {
+        this.$Message.success('发送成功')
+        this.cancel({ msg: 'ok' })
+      })
+    },
     reportFile () {
       // 发送赔偿通知书
       if (!this.form.is_load) {
         return this.$Message.error('当前案件外勤正在处置中，请等待外勤处置完成！')
       }
-      this.$Modal.confirm({
-        render: (h) => {
-          return h('Input', {
-            props: {
-              value: this.archive_num,
-              autofocus: true,
-              maxlength: 6,
-              placeholder: '请输入卷宗号'
-            },
-            on: {
-              input: (val) => {
-                this.archive_num = val
-              }
-            }
-          })
-        },
-        title: '请输入数字格式的卷宗号 (不必填)',
-        onOk: () => {
-          reportFile({ report_id: this.id, archive_num: this.archive_num }).then(res => {
-            this.$Message.success('发送成功')
-            this.cancel({ msg: 'ok' })
-          })
-        }
-      })
+      this.confirmmodal = true
     },
     createArchive () {
       // 生成卷宗

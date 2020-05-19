@@ -209,3 +209,13 @@ export const downloadCsvTemplate = (type) => {
     responseType: 'blob'
   })
 }
+
+// 删除案件附件
+export const rmReportAttachment = (data) => {
+  data.token = getToken()
+  return axios.request({
+    url: 'adminserver/rmReportAttachment',
+    data: data,
+    method: 'post'
+  })
+}

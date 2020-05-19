@@ -217,6 +217,54 @@
       </p>
       <Table ref="table" :columns="cash_log_columns" :data="form.cash_log" :loading="loading" border></Table>
     </Card>
+    <Card v-if="form.status==1||form.status==2" shadow>
+      <p slot="title" class="card-title">
+        上传附件
+      </p>
+      <div class="upload-list" v-for="(item, index) in uploadList" :key="index">
+          <template v-if="item.status === 'finished'">
+              <img :src="item.url||item.src">
+              <div class="upload-list-cover">
+                  <a :href="item.url||item.src" target="_blank"><Icon type="ios-eye-outline"></Icon></a>
+                  <Icon type="ios-trash-outline" @click.native="upRemove(item)"></Icon>
+              </div>
+          </template>
+          <template v-else>
+              <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
+          </template>
+      </div>
+      <Upload
+          style="display: inline-block; width:120px;"
+          ref="upload"
+          accept="image/*"
+          type="drag"
+          name="upfile"
+          :default-file-list="form.attachment"
+          :action="up_action"
+          :data="{token: token, report_id: id}"
+          :show-upload-list="false"
+          :max-size="10000"
+          :on-error="upError"
+          :on-success="upSuccess"
+          :on-exceeded-size="upMaxSize"
+          :before-upload="upBeforeUpload"
+          >
+          <div style="width: 120px;height:120px;line-height: 120px;">
+              <Icon type="ios-camera" size="30"></Icon>
+          </div>
+      </Upload>
+    </Card>
+    <Card v-else shadow>
+      <p slot="title" class="card-title">
+        附件
+      </p>
+      <div class="upload-list" v-for="(item, index) in form.attachment" :key="index">
+          <img :src="item.src">
+          <div class="upload-list-cover">
+              <a :href="item.src" target="_blank"><Icon type="ios-eye-outline"></Icon></a>
+          </div>
+      </div>
+    </Card>
     <div class="con-footer">
       <Button style="width: 150px; margin-right: 16px" type="default" :loading="submit" @click="cancel()">取消</Button>
       <Button v-if="form.status==1&&form.is_property" :type="form.is_load?'primary':'default'" style="width: 150px; margin-right: 16px" :loading="submit" @click="reportFile()">发送赔偿通知书</Button>
@@ -242,8 +290,10 @@ import {
   downloadallnote,
   downloaditemnote,
   downloadpaynote,
-  createArchive
+  createArchive,
+  rmReportAttachment
 } from '@/api/server'
+import { getToken } from '@/libs/util'
 import viewpdf from '_c/view-pdf/view-pdf'
 import confirmpayed from '_c/report/confirmpayed'
 export default {
@@ -267,6 +317,9 @@ export default {
     return {
       loading: false,
       submit: false,
+      up_disabled: false,
+      up_action: '',
+      token: getToken(),
       pdfmodal: false,
       confirmmodal: false,
       filesrc: '',
@@ -275,10 +328,12 @@ export default {
       cash: 0,
       money: 0,
       archive_num: '',
+      uploadList: [],
       form: {
         items: [],
         cash_log: [],
-        persons: []
+        persons: [],
+        attachment: []
       },
       columns: [
         {
@@ -490,9 +545,75 @@ export default {
           this.cash = res.cash
           this.money = 0
           this.archive_num = res.archive_num
+          setTimeout(() => {
+            if (this.$refs.upload) {
+              this.uploadList = this.$refs.upload.fileList
+            }
+          })
         })
       }
+    },
+
+    upRemove (file) {
+      // 删除上传文件
+      this.$Modal.confirm({
+        title: '提示',
+        content: '是否删除该附件？',
+        onOk: () => {
+          rmReportAttachment({
+            id: file.id,
+            report_id: this.id
+          }).then(res => {
+            const fileList = this.$refs.upload.fileList
+            this.$refs.upload.fileList.splice(fileList.indexOf(file), 1)
+          })
+        }
+      })
+    },
+    upSuccess (response, file) {
+      // 上传成功
+      this.up_disabled = false
+      if (!response || response.errorcode !== 0) {
+        this.$Modal.error({
+          title: '错误提示',
+          content: response.message
+        })
+        return
+      }
+      this.$Message.success('上传成功')
+      file.id = response.data.id
+      file.url = response.data.url
+      file.name = response.data.name
+    },
+    upError (error, file) {
+      // 上传失败
+      this.up_disabled = false
+      this.$Modal.error({
+        title: '错误提示',
+        content: '文件 ' + file.name + '上传失败' + (error instanceof Error ? error.message : error)
+      })
+    },
+    upMaxSize (file) {
+      // 上传大小限制
+      this.up_disabled = false
+      this.$Modal.error({
+        title: '错误提示',
+        content: '文件 ' + file.name + '太大，最大上传 10 M'
+      })
+    },
+    upBeforeUpload () {
+      // 开始上传
+      if (this.up_disabled) {
+        return false
+      }
+      this.up_disabled = true
+      return true
     }
+  },
+  created () {
+    // 上传地址
+    this.up_action = process.env.NODE_ENV === 'development' ? this.$config.baseUrl.dev : this.$config.baseUrl.pro
+    this.up_action += '/adminserver/reportAttachment'
   }
 }
 </script>
@@ -508,5 +629,41 @@ export default {
     left: 0;
     background-color: #fff;
     width: 100%;
+  }
+  .upload-list{
+      display: inline-block;
+      width: 120px;
+      height: 120px;
+      text-align: center;
+      line-height: 120px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #fff;
+      position: relative;
+      box-shadow: 0 1px 1px rgba(0,0,0,.2);
+      margin-right: 10px;
+  }
+  .upload-list img{
+      width: 100%;
+      height: 100%;
+  }
+  .upload-list-cover{
+      display: none;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,.6);
+  }
+  .upload-list:hover .upload-list-cover{
+      display: block;
+  }
+  .upload-list-cover i{
+      color: #fff;
+      font-size: 30px;
+      cursor: pointer;
+      margin: 0 10px;
   }
 </style>

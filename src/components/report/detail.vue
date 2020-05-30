@@ -6,34 +6,7 @@
       </p>
       <Form v-for="(item, index) in form.persons" :key="index" :label-width="100" label-colon>
         <Row>
-          <Col span="6">
-            <FormItem label="姓名">
-              {{item.full_name}}
-            </FormItem>
-          </Col>
-          <Col span="6">
-            <FormItem label="性别">
-              {{item.gender}}
-            </FormItem>
-          </Col>
-          <Col span="6">
-            <FormItem label="电话">
-              {{item.user_mobile}}
-            </FormItem>
-          </Col>
-          <Col span="6">
-            <FormItem label="出生日期">
-              {{item.birthday}}
-            </FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="6">
-            <FormItem label="身份证">
-              {{item.idcard}}
-            </FormItem>
-          </Col>
-          <Col span="6">
+          <Col span="12">
             <FormItem label="车牌号">
               {{item.plate_num}}
             </FormItem>
@@ -44,8 +17,52 @@
             </FormItem>
           </Col>
           <Col span="6">
+            <FormItem label="电话">
+              {{item.user_mobile}}
+            </FormItem>
+          </Col>
+        </Row>
+        <Row v-if="item.full_name">
+          <Col span="4">
+            <FormItem label="姓名">
+              {{item.full_name}}
+            </FormItem>
+          </Col>
+          <Col span="4">
+            <FormItem label="性别">
+              {{item.gender}}
+            </FormItem>
+          </Col>
+          <Col span="4">
+            <FormItem label="出生日期">
+              {{item.birthday}}
+            </FormItem>
+          </Col>
+          <Col span="4">
+            <FormItem label="身份证">
+              {{item.idcard}}
+            </FormItem>
+          </Col>
+          <Col span="8">
             <FormItem label="住址">
               {{item.addr}}
+            </FormItem>
+          </Col>
+        </Row>
+        <Row v-if="item.company_name">
+          <Col span="6">
+            <FormItem label="单位">
+              {{item.company_name}}
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="法人代表">
+              {{item.legal_name}}
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="单位地址">
+              {{item.company_addr}}
             </FormItem>
           </Col>
         </Row>
